@@ -12,5 +12,15 @@ module CapistranoFluentd
         :port => 24224,
       }
     end
+
+    def logger
+      unless @logger
+        c = config.dup
+        tag = c.delete(:tag)
+        @logger = StaticTagLogger.new(tag, c)
+      end
+      @logger
+    end
+
   end
 end
