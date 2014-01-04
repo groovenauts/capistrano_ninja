@@ -1,5 +1,5 @@
 require "capistrano_fluentd/version"
 
 module CapistranoFluentd
-  # Your code goes here...
+  autoload :Logger, "capistrano_fluentd/logger"
 end
