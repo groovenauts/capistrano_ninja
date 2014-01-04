@@ -1,7 +1,5 @@
 require "capistrano_fluentd/ext"
 
-require 'fluent-logger'
-
 module CapistranoFluentd
   module Ext
     module Logger
@@ -12,22 +10,27 @@ module CapistranoFluentd
         end
       end
 
-
       def fluent
         unless @fluent
           c = CapistranoFluentd.config.dup
-          tag = c.delete(:tag) || "capistrano"
+          tag = c.delete(:tag)
           @fluent = StaticTagLogger.new(tag, c)
         end
         @fluent
       end
 
+      # from Capistrano::Logger
+      # IMPORTANT = 0
+      INFO      = 1
+      # DEBUG     = 2
+      # TRACE     = 3
+
       def log_with_fluentd(level, message, line_prefix=nil, &block)
         result = log_without_fluentd(level, message, line_prefix, &block)
         begin
-          msg = line_prefix ? "[#{line_prefix}] #{message}" : "#{message}"
-puts "_____________________" + msg
-          fluent.post({"level" => level, "message" => msg})
+          map = {"level" => level, "message" => message}
+          map["line_prefix"] = line_prefix if line_prefix
+          fluent.post_without_tag(map)
         rescue => e
           log_without_fluentd(INFO, "[#{e.class}] #{e.message}")
         end

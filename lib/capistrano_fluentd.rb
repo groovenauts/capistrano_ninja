@@ -6,7 +6,7 @@ module CapistranoFluentd
 
   class << self
     def config
-      @config || = {
+      @config ||= {
         :tag  => "capistrano",
         :host => "localhost",
         :port => 24224,
