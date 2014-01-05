@@ -25,12 +25,26 @@ module CapistranoFluentd
         CapistranoFluentd.tag_base
       end
 
+      def servers
+        @servers ||= []
+      end
+
       def log_with_fluentd(level, message, line_prefix=nil, &block)
         result = log_without_fluentd(level, message, line_prefix, &block)
         begin
+          case message
+          when /\Aservers: \[(.+)\]\Z/ then
+            @servers = $1.split(/,/).map{|s| s.gsub(/\A\"|\"\Z/, '')}
+          when /\Aexecuting \".+\"\Z/ then
+            @remote_command = message
+          when "executing command" then
+            if line_prefix && servers.include?(line_prefix)
+              logger.post("#{tag_base}.remote.log", {"level" => level, "message" => @remote_command, "server" => line_prefix})
+            end
+          end
           map = {"level" => level, "message" => message}
-          map["line_prefix"] = line_prefix if line_prefix
-          logger.post("#{tag_base}.log", map)
+          # map["line_prefix"] = line_prefix if line_prefix
+          logger.post("#{tag_base}.local.log", map)
         rescue => e
           log_without_fluentd(INFO, "[#{e.class}] #{e.message}")
         end

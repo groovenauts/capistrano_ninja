@@ -44,13 +44,13 @@ describe CapistranoFluentd::Ext::Logger do
     context "server 192.168.55.99" do
       let(:server){ "192.168.55.99" }
       let(:msg){ "servers: [\"#{server}\"]" }
-      before{ cap_logger.post(trace, msg, nil) }
+      before{ cap_logger.log(trace, msg, nil) }
       it { expect(cap_logger.servers).to eq [server] }
       it { expect(cap_logger.logs).to eq [{level: trace, message: msg, line_prefix: nil}] }
-      it { expect(fld_logger.logs).to eq [["cap.log", {"level" => trace, "message" => msg}]] }
+      it { expect(fld_logger.logs).to eq [["cap.local.log", {"level" => trace, "message" => msg}]] }
     end
   end
-  
+
 
   # * 2014-01-05 11:57:45 executing `deploy:setup_deploy_config_file'
   # * executing "mkdir -p '/srv/test_app/shared/config/deploy'"
@@ -59,25 +59,41 @@ describe CapistranoFluentd::Ext::Logger do
   #   command finished in 51ms
 
   context "executing command remotely" do
-    let(:server){ "192.168.55.99" }
-    before do
-      cap_logger.post debug, "`deploy:setup_deploy_config_file'"
-      cap_logger.post debug, "executing \"mkdir -p '/srv/test_app/shared/config/deploy'\""
-      cap_logger.post trace, "servers: [\"#{server}\"]"
-      cap_logger.post trace, "executing command", "#{server}"
-      cap_logger.post trace, "command finished in 49ms"
-    end
-    
-    context "server 192.168.55.99" do
+    context "sigle server" do
       let(:server){ "192.168.55.99" }
-      let(:msg){ "servers: [\"#{server}\"]" }
+      let(:messages){
+        [
+         [debug, "`deploy:setup_deploy_config_file'"],
+         [debug, "executing \"mkdir -p '/srv/test_app/shared/config/deploy'\""],
+         [trace, "servers: [\"#{server}\"]"],
+         [trace, "executing command", "#{server}"],
+         [trace, "command finished in 49ms"],
+        ]
+      }
+
+      before do
+        messages.each do |msg|
+          cap_logger.log *msg
+        end
+      end
+
       it { expect(cap_logger.servers).to eq [server] }
-      it { expect(cap_logger.logs).to eq [{level: trace, message: msg, line_prefix: nil}] }
-      it { expect(fld_logger.logs).to eq [["cap.log", {"level" => trace, "message" => msg}]]
-      
+      it { expect(cap_logger.logs).to eq messages.map{|args| {level: args[0], message: args[1], line_prefix: args[2], } } }
+      it do
+        expected = [
+           ["cap.local.log" , {"level" => messages[0][0], "message" => messages[0][1]}],
+           ["cap.local.log" , {"level" => messages[1][0], "message" => messages[1][1]}],
+           ["cap.local.log" , {"level" => messages[2][0], "message" => messages[2][1]}],
+           # insert cap.remote.log message which is replaced  "executing command" into actual command
+           ["cap.remote.log", {"level" => messages[3][0], "message" => messages[1][1], "server" => server}],
+           ["cap.local.log" , {"level" => messages[3][0], "message" => messages[3][1]}],
+           ["cap.local.log" , {"level" => messages[4][0], "message" => messages[4][1]}],
+        ]
+        expect(fld_logger.logs).to eq expected
+      end
     end
   end
-  
+
 
 
   #   servers: ["192.168.55.99"]
@@ -93,7 +109,7 @@ describe CapistranoFluentd::Ext::Logger do
 
 
   #   * 2014-01-05 11:57:45 executing `deploy:update_code'
-  # branch or tag : [master] 
+  # branch or tag : [master]
   #     executing locally: "git ls-remote git@github.com:groovenauts/test_app.git master"
   #     command finished in 3739ms
 
