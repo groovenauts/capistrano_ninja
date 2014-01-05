@@ -21,12 +21,16 @@ module CapistranoFluentd
         CapistranoFluentd.logger
       end
 
+      def tag_base
+        CapistranoFluentd.tag_base
+      end
+
       def log_with_fluentd(level, message, line_prefix=nil, &block)
         result = log_without_fluentd(level, message, line_prefix, &block)
         begin
           map = {"level" => level, "message" => message}
           map["line_prefix"] = line_prefix if line_prefix
-          logger.post_without_tag(map)
+          logger.post("#{tag_base}.log", map)
         rescue => e
           log_without_fluentd(INFO, "[#{e.class}] #{e.message}")
         end
