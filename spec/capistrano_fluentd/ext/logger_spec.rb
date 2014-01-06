@@ -35,8 +35,10 @@ describe CapistranoFluentd::Ext::Logger do
 
   let(:fld_logger){ MockFluentdLogger.new }
   let(:cap_logger){ MockCapLogger.new }
+  let(:local_hostname){ "host01" }
   before{ CapistranoFluentd.stub(:logger).and_return(fld_logger) }
   before{ CapistranoFluentd.stub(:tag_base).and_return("cap") }
+  before{ CapistranoFluentd.stub(:local_hostname).and_return(local_hostname) }
 
   context "servers" do
     it { expect(cap_logger.servers).to be_empty }
@@ -111,9 +113,7 @@ describe CapistranoFluentd::Ext::Logger do
       }
 
       before do
-        messages.each do |msg|
-          cap_logger.log *msg
-        end
+        messages.each{|msg| cap_logger.log *msg }
       end
 
       it { expect(cap_logger.servers).to eq [server1, server2, server3] }
@@ -134,19 +134,48 @@ describe CapistranoFluentd::Ext::Logger do
         expect(fld_logger.logs).to eq expected
       end
     end
+
+    #    servers: ["192.168.55.99"]
+    # ** sftp upload /var/folders/70/5yxt0jys7ss_m71y5pz_l_qc0000gn/T/20140105030006.zip -> /tmp/20140105030006.zip
+    #    [192.168.55.99] /tmp/20140105030006.zip
+    #    [192.168.55.99] done
+    #  * sftp upload complete
+    context "sftp upload" do
+      let(:server){ "192.168.55.101" }
+      let(:messages){
+        [
+         [trace, "servers: [\"#{server}\"]"],
+         [info , "sftp upload /var/folders/70/5yxt0jys7ss_m71y5pz_l_qc0000gn/T/20140105030006.zip -> /tmp/20140105030006.zip"],
+         [trace, "[#{server}] /tmp/20140105030006.zip"],
+         [trace, "[#{server}] done"],
+         [debug, "sftp upload complete"],
+        ]
+      }
+
+      before do
+        messages.each{|msg| cap_logger.log *msg }
+      end
+
+      it { expect(cap_logger.servers).to eq [server] }
+      it { expect(cap_logger.logs).to eq messages.map{|args| {level: args[0], message: args[1], line_prefix: args[2], } } }
+      it do
+        expected = [
+           ["cap.local.log" , {"level" => messages[0][0], "message" => messages[0][1]}],
+           ["cap.local.log" , {"level" => messages[1][0], "message" => messages[1][1]}],
+           ["cap.local.log" , {"level" => messages[2][0], "message" => messages[2][1]}],
+           ["cap.remote.log", {"level" => messages[2][0], "message" => messages[1][1], "server" => server, "from" => local_hostname }],
+           ["cap.local.log" , {"level" => messages[3][0], "message" => messages[3][1]}],
+           ["cap.remote.log", {"level" => messages[3][0], "message" => "done", "server" => server}],
+           ["cap.local.log" , {"level" => messages[4][0], "message" => messages[4][1]}],
+        ]
+        expect(fld_logger.logs).to eq expected
+      end
+    end
+
   end
 
 
 
-  #   servers: ["192.168.55.99"]
-  # ** sftp upload /var/folders/70/5yxt0jys7ss_m71y5pz_l_qc0000gn/T/20140105030006.zip -> /tmp/20140105030006.zip
-  #    [192.168.55.99] /tmp/20140105030006.zip
-  #    [192.168.55.99] done
-  #  * sftp upload complete
-  #  * executing "cd /srv/test_app/releases && unzip -q /tmp/20140105030006.zip && rm /tmp/20140105030006.zip"
-  #    servers: ["192.168.55.99"]
-  #    [192.168.55.99] executing command
-  #    command finished in 141ms
 
 
 

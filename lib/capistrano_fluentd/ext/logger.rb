@@ -42,9 +42,25 @@ module CapistranoFluentd
             @servers = $1.split(/\s*,\s*/).map{|s| s.gsub(/\A\"|\"\Z/, '')}
           when /\Aexecuting \".+\"\Z/ then
             @remote_command = message
+          when /\Asftp upload .+ -> (.+)\Z/ then
+            @uploading_command = message
+            @uploaded_filepath = $1
           when "executing command" then
             if line_prefix && servers.include?(line_prefix)
               logger.post("#{tag_base}.remote.log", {"level" => level, "message" => @remote_command, "server" => line_prefix})
+            end
+          when /\A\[(.+)\]\s+(.+)\Z/ then
+            server = $1
+            body = $2
+            if @uploaded_filepath && body =~ /\A#{Regexp.escape(@uploaded_filepath)}\Z/
+              logger.post("#{tag_base}.remote.log",
+                          { "level" => level, "message" => @uploading_command,
+                            "server" => server, "from" => CapistranoFluentd.local_hostname})
+              @uploaded_filepath = nil
+            else
+              logger.post("#{tag_base}.remote.log",
+                          { "level" => level, "message" => body,
+                            "server" => server})
             end
           end
         rescue => e
