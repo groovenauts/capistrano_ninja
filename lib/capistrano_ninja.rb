@@ -3,9 +3,9 @@ require "capistrano_ninja/version"
 require 'securerandom'
 
 module CapistranoNinja
-  autoload :Ext            , "capistrano_ninja/ext"
-  autoload :Config         , "capistrano_ninja/config"
-  autoload :StaticTagLogger, "capistrano_ninja/static_tag_logger"
+  autoload :Ext         , "capistrano_ninja/ext"
+  autoload :Config      , "capistrano_ninja/config"
+  autoload :FluentLogger, "capistrano_ninja/fluent_logger"
 
   class << self
     attr_accessor :tag, :command_id
@@ -16,7 +16,7 @@ module CapistranoNinja
 
     def logger
       unless @logger
-        @logger = StaticTagLogger.new(config.tag, config.ninja_options || {})
+        @logger = FluentLogger.new(config.fluent_logger_options)
         @logger.extra.update(:id => config.id_generator.call)
       end
       @logger
