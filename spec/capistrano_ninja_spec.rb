@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe CapistranoFluentd do
+describe CapistranoNinja do
   it 'should have a version number' do
-    CapistranoFluentd::VERSION.should_not be_nil
+    CapistranoNinja::VERSION.should_not be_nil
   end
 
 end

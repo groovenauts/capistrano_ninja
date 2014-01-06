@@ -1,7 +1,7 @@
-require "capistrano_fluentd"
+require "capistrano_ninja"
 
-module CapistranoFluentd
+module CapistranoNinja
   module Ext
-    autoload :Logger, "capistrano_fluentd/ext/logger"
+    autoload :Logger, "capistrano_ninja/ext/logger"
   end
 end

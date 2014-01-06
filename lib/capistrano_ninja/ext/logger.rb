@@ -1,13 +1,13 @@
-require "capistrano_fluentd/ext"
+require "capistrano_ninja/ext"
 
-module CapistranoFluentd
+module CapistranoNinja
   module Ext
     module Logger
 
       def self.included(m)
         m.module_eval do
-          alias_method :log_without_fluentd, :log
-          alias_method :log, :log_with_fluentd
+          alias_method :log_without_ninja, :log
+          alias_method :log, :log_with_ninja
         end
       end
 
@@ -18,24 +18,24 @@ module CapistranoFluentd
       # TRACE     = 3
 
       def logger
-        CapistranoFluentd.logger
+        CapistranoNinja.logger
       end
 
       def tag_base
-        CapistranoFluentd.tag_base
+        @tag_base ||= CapistranoNinja.config.tag_base
       end
 
       def servers
         @servers ||= []
       end
 
-      def log_with_fluentd(level, message, line_prefix=nil, &block)
-        result = log_without_fluentd(level, message, line_prefix, &block)
+      def log_with_ninja(level, message, line_prefix=nil, &block)
+        result = log_without_ninja(level, message, line_prefix, &block)
         begin
           local_msg = line_prefix ? "[#{line_prefix}] #{message}" : message
           map = {"level" => level, "message" => local_msg}
           # map["line_prefix"] = line_prefix if line_prefix
-          logger.post("#{tag_base}.local.log", map)
+          logger.post("#{tag_base}.log.local", map)
 
           case message
           when /\Aservers: \[(.+)\]\Z/ then
@@ -47,24 +47,24 @@ module CapistranoFluentd
             @uploaded_filepath = $1
           when "executing command" then
             if line_prefix && servers.include?(line_prefix)
-              logger.post("#{tag_base}.remote.log", {"level" => level, "message" => @remote_command, "server" => line_prefix})
+              logger.post("#{tag_base}.log.remote", {"level" => level, "message" => @remote_command, "server" => line_prefix})
             end
           when /\A\[(.+)\]\s+(.+)\Z/ then
             server = $1
             body = $2
             if @uploaded_filepath && body =~ /\A#{Regexp.escape(@uploaded_filepath)}\Z/
-              logger.post("#{tag_base}.remote.log",
+              logger.post("#{tag_base}.log.remote",
                           { "level" => level, "message" => @uploading_command,
-                            "server" => server, "from" => CapistranoFluentd.local_hostname})
+                            "server" => server, "from" => CapistranoNinja.local_hostname})
               @uploaded_filepath = nil
             else
-              logger.post("#{tag_base}.remote.log",
+              logger.post("#{tag_base}.log.remote",
                           { "level" => level, "message" => body,
                             "server" => server})
             end
           end
         rescue => e
-          log_without_fluentd(INFO, "[#{e.class}] #{e.message}")
+          log_without_ninja(INFO, "[#{e.class}] #{e.message}")
         end
         return result
       end

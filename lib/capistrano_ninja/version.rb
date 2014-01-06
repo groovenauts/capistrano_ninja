@@ -1,3 +1,3 @@
-module CapistranoFluentd
+module CapistranoNinja
   VERSION = "0.0.1"
 end

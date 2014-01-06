@@ -1,11 +1,11 @@
-require "capistrano_fluentd/version"
+require "capistrano_ninja/version"
 
 require 'securerandom'
 
-module CapistranoFluentd
-  autoload :Ext            , "capistrano_fluentd/ext"
-  autoload :Config         , "capistrano_fluentd/config"
-  autoload :StaticTagLogger, "capistrano_fluentd/static_tag_logger"
+module CapistranoNinja
+  autoload :Ext            , "capistrano_ninja/ext"
+  autoload :Config         , "capistrano_ninja/config"
+  autoload :StaticTagLogger, "capistrano_ninja/static_tag_logger"
 
   class << self
     attr_accessor :tag, :command_id
@@ -16,7 +16,7 @@ module CapistranoFluentd
 
     def logger
       unless @logger
-        @logger = StaticTagLogger.new(config.tag, config.fluentd_options || {})
+        @logger = StaticTagLogger.new(config.tag, config.ninja_options || {})
         @logger.extra.update(:id => config.id_generator.call)
       end
       @logger
@@ -25,9 +25,9 @@ module CapistranoFluentd
     def configure
       yield(config) if block_given?
       Capistrano::Logger.module_eval do
-        include CapistranoFluentd::Ext::Logger
+        include CapistranoNinja::Ext::Logger
       end
-      logger.post_without_tag({program: "capistrano", command: "#{$PROGRAM_NAME} #{ARGV.join(' ')}"})
+      logger.post("#{config.tag_base}.log", {program: "capistrano", command: "#{$PROGRAM_NAME} #{ARGV.join(' ')}", from: config.local_hostname})
     end
 
   end

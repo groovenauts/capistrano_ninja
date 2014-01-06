@@ -1,17 +1,22 @@
-require "capistrano_fluentd"
+require "capistrano_ninja"
 
-module CapistranoFluentd
+require 'socket'
+
+module CapistranoNinja
   class Config
-    attr_accessor :tag, :id_generator
-
-    attr_accessor :host, :port, :fluentd_options
+    attr_accessor :tag_base, :id_generator
+    attr_accessor :host, :port, :ninja_options
+    attr_writer :local_hostname
 
     def initialize
-      @tag = "cap"
+      @tag_base = "cap"
       @host = "localhost"
       @port = 24224
       @id_generator = Proc.new{ SecureRandom.uuid }
-      
+    end
+
+    def local_hostname
+      @local_hostname ||= Socket::gethostname
     end
     
   end

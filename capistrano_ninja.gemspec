@@ -1,15 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'capistrano_fluentd/version'
+require 'capistrano_ninja/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "capistrano_fluentd"
-  spec.version       = CapistranoFluentd::VERSION
+  spec.name          = "capistrano_ninja"
+  spec.version       = CapistranoNinja::VERSION
   spec.authors       = ["akima"]
   spec.email         = ["akima@groovenauts.jp"]
-  spec.description   = %q{transport capistrano log to fluentd}
-  spec.summary       = %q{transport capistrano log to fluentd}
+  spec.description   = %q{transport capistrano log to ninja}
+  spec.summary       = %q{transport capistrano log to ninja}
   spec.homepage      = ""
   spec.license       = "MIT"
 

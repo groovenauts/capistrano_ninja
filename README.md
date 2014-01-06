@@ -1,4 +1,4 @@
-# CapistranoFluentd
+# CapistranoNinja
 
 TODO: Write a gem description
 
@@ -6,7 +6,7 @@ TODO: Write a gem description
 
 Add this line to your application's Gemfile:
 
-    gem 'capistrano_fluentd'
+    gem 'capistrano_ninja'
 
 And then execute:
 
@@ -14,7 +14,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install capistrano_fluentd
+    $ gem install capistrano_ninja
 
 ## Usage
 
