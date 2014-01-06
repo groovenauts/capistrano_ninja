@@ -175,14 +175,36 @@ describe CapistranoFluentd::Ext::Logger do
   end
 
 
+  context "executing command locally" do
+    #   * 2014-01-05 11:57:45 executing `deploy:update_code'
+    # branch or tag : [master]
+    #     executing locally: "git ls-remote git@github.com:groovenauts/test_app.git master"
+    #     command finished in 3739ms
+    context "sftp upload" do
+      let(:server){ "192.168.55.101" }
+      let(:messages){
+        [
+         [debug, "executing `deploy:update_code'"],
+         [trace, "executing locally: \"git ls-remote git@github.com:tengine/fontana.git master\""],
+         [trace, "command finished in 3739ms"],
+        ]
+      }
 
+      before do
+        messages.each{|msg| cap_logger.log *msg }
+      end
 
-
-
-  #   * 2014-01-05 11:57:45 executing `deploy:update_code'
-  # branch or tag : [master]
-  #     executing locally: "git ls-remote git@github.com:groovenauts/test_app.git master"
-  #     command finished in 3739ms
-
+      it { expect(cap_logger.servers).to eq [] }
+      it { expect(cap_logger.logs).to eq messages.map{|args| {level: args[0], message: args[1], line_prefix: args[2], } } }
+      it do
+        expected = [
+           ["cap.local.log" , {"level" => messages[0][0], "message" => messages[0][1]}],
+           ["cap.local.log" , {"level" => messages[1][0], "message" => messages[1][1]}],
+           ["cap.local.log" , {"level" => messages[2][0], "message" => messages[2][1]}],
+        ]
+        expect(fld_logger.logs).to eq expected
+      end
+    end
+  end
 
 end
