@@ -1,0 +1,70 @@
+# http://docs.fluentd.org/articles/ruby
+<source>
+  type forward
+  port 24224
+</source>
+
+# for debug
+<match cap.**>
+  type stdout
+</match>
+
+# to store logs
+<match cap.log>
+  # plugin type
+  type mongo
+
+  # mongodb host + port
+  host localhost
+  port 27017
+
+  # mongodb db + collection
+  database capistrano_ninja
+  collection cap_ninja_logs
+
+  capped
+  capped_size 1024m
+
+  # interval
+  flush_interval 10s
+</match>
+
+
+<match cap.log.local>
+  # plugin type
+  type mongo
+
+  # mongodb host + port
+  host localhost
+  port 27017
+
+  # mongodb db + collection
+  database capistrano_ninja
+  collection cap_ninja_log_locals
+
+  capped
+  capped_size 1024m
+
+  # interval
+  flush_interval 10s
+</match>
+
+
+<match cap.log.remote>
+  # plugin type
+  type mongo
+
+  # mongodb host + port
+  host localhost
+  port 27017
+
+  # mongodb db + collection
+  database capistrano_ninja
+  collection cap_ninja_log_remotes
+
+  capped
+  capped_size 1024m
+
+  # interval
+  flush_interval 10s
+</match>
