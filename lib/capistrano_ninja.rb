@@ -4,33 +4,26 @@ require 'securerandom'
 
 module CapistranoFluentd
   autoload :Ext            , "capistrano_fluentd/ext"
+  autoload :Config         , "capistrano_fluentd/config"
   autoload :StaticTagLogger, "capistrano_fluentd/static_tag_logger"
 
   class << self
     attr_accessor :tag, :command_id
 
     def config
-      @config ||= {
-        :tag  => "capistrano",
-        :host => "localhost",
-        :port => 24224,
-        :uuid => SecureRandom.uuid,
-      }
+      @config ||= Config.new
     end
 
     def logger
       unless @logger
-        c = config.dup
-        tag = c.delete(:tag)
-        uuid = c.delete(:uuid)
-        @logger = StaticTagLogger.new(tag, c)
-        @logger.extra.update(:uuid => uuid)
+        @logger = StaticTagLogger.new(config.tag, config.fluentd_options || {})
+        @logger.extra.update(:id => config.id_generator.call)
       end
       @logger
     end
 
     def configure
-      yield(self) if block_given?
+      yield(config) if block_given?
       Capistrano::Logger.module_eval do
         include CapistranoFluentd::Ext::Logger
       end
