@@ -13,7 +13,7 @@ module CapistranoNinja
 
     def post(tag, map)
       m = extra.dup.update(map)
-      post(tag, m)
+      super(tag, m)
     end
 
   end
