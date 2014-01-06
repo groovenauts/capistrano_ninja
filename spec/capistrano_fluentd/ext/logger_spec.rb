@@ -84,10 +84,52 @@ describe CapistranoFluentd::Ext::Logger do
            ["cap.local.log" , {"level" => messages[0][0], "message" => messages[0][1]}],
            ["cap.local.log" , {"level" => messages[1][0], "message" => messages[1][1]}],
            ["cap.local.log" , {"level" => messages[2][0], "message" => messages[2][1]}],
+           ["cap.local.log" , {"level" => messages[3][0], "message" => "[#{server}] " + messages[3][1]}],
            # insert cap.remote.log message which is replaced  "executing command" into actual command
            ["cap.remote.log", {"level" => messages[3][0], "message" => messages[1][1], "server" => server}],
-           ["cap.local.log" , {"level" => messages[3][0], "message" => messages[3][1]}],
            ["cap.local.log" , {"level" => messages[4][0], "message" => messages[4][1]}],
+        ]
+        expect(fld_logger.logs).to eq expected
+      end
+    end
+
+
+    context "3 servers" do
+      let(:server1){ "192.168.55.101" }
+      let(:server2){ "192.168.55.102" }
+      let(:server3){ "192.168.55.103" }
+      let(:messages){
+        [
+         [debug, "`deploy:setup_deploy_config_file'"],
+         [debug, "executing \"mkdir -p '/srv/test_app/shared/config/deploy'\""],
+         [trace, "servers: [\"#{server1}\", \"#{server2}\", \"#{server3}\"]"],
+         [trace, "executing command", "#{server1}"],
+         [trace, "executing command", "#{server2}"],
+         [trace, "executing command", "#{server3}"],
+         [trace, "command finished in 49ms"],
+        ]
+      }
+
+      before do
+        messages.each do |msg|
+          cap_logger.log *msg
+        end
+      end
+
+      it { expect(cap_logger.servers).to eq [server1, server2, server3] }
+      it { expect(cap_logger.logs).to eq messages.map{|args| {level: args[0], message: args[1], line_prefix: args[2], } } }
+      it do
+        expected = [
+           ["cap.local.log" , {"level" => messages[0][0], "message" => messages[0][1]}],
+           ["cap.local.log" , {"level" => messages[1][0], "message" => messages[1][1]}],
+           ["cap.local.log" , {"level" => messages[2][0], "message" => messages[2][1]}],
+           ["cap.local.log" , {"level" => messages[3][0], "message" => "[#{server1}] " + messages[3][1]}],
+           ["cap.remote.log", {"level" => messages[3][0], "message" => messages[1][1], "server" => server1}],
+           ["cap.local.log" , {"level" => messages[4][0], "message" => "[#{server2}] " + messages[4][1]}],
+           ["cap.remote.log", {"level" => messages[4][0], "message" => messages[1][1], "server" => server2}],
+           ["cap.local.log" , {"level" => messages[5][0], "message" => "[#{server3}] " + messages[5][1]}],
+           ["cap.remote.log", {"level" => messages[5][0], "message" => messages[1][1], "server" => server3}],
+           ["cap.local.log" , {"level" => messages[6][0], "message" => messages[6][1]}],
         ]
         expect(fld_logger.logs).to eq expected
       end
