@@ -5,7 +5,7 @@
 </source>
 
 # for debug
-<match ninja.**>
+<match ninja.*>
   type stdout
 </match>
 

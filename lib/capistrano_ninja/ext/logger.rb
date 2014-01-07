@@ -51,11 +51,11 @@ module CapistranoNinja
             end
           when /\A\[(.+)\]\s+(.+)\Z/ then
             server = $1
-            body = $2
+            body = $2.strip
             if @uploaded_filepath && body =~ /\A#{Regexp.escape(@uploaded_filepath)}\Z/
               logger.post("#{tag_base}.remote_logs",
                           { "level" => level, "message" => @uploading_command,
-                            "server" => server, "from" => CapistranoNinja.local_hostname})
+                            "server" => server, "from" => CapistranoNinja.config.local_hostname})
               @uploaded_filepath = nil
             else
               logger.post("#{tag_base}.remote_logs",
