@@ -48,20 +48,20 @@ module CapistranoNinja
             @uploaded_filepath = $1
           when "executing command" then
             if line_prefix && servers.include?(line_prefix)
-              logger.post("#{tag_base}.remote_logs", {"level" => LEVEL_NAMES[level], "message" => @remote_command, "server" => line_prefix})
+              logger.post("#{tag_base}.remote_logs", {"level" => LEVEL_NAMES[level], "server" => line_prefix, "message" => @remote_command})
             end
           when /\A\[(.+)\]\s+(.+)\Z/ then
             server = $1
             body = $2.strip
             if @uploaded_filepath && body =~ /\A#{Regexp.escape(@uploaded_filepath)}\Z/
               logger.post("#{tag_base}.remote_logs",
-                          { "level" => LEVEL_NAMES[level], "message" => @uploading_command,
-                            "server" => server, "from" => CapistranoNinja.config.local_hostname})
+                          { "level" => LEVEL_NAMES[level], "server" => server,
+                            "message" => @uploading_command,
+                            "from" => CapistranoNinja.config.local_hostname})
               @uploaded_filepath = nil
             else
               logger.post("#{tag_base}.remote_logs",
-                          { "level" => LEVEL_NAMES[level], "message" => body,
-                            "server" => server})
+                          { "level" => LEVEL_NAMES[level], "server" => server, "message" => body })
             end
           end
         rescue => e
