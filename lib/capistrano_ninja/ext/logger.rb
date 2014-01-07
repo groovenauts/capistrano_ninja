@@ -1,5 +1,7 @@
 require "capistrano_ninja/ext"
 
+require 'capistrano/logger'
+
 module CapistranoNinja
   module Ext
     module Logger
@@ -11,11 +13,10 @@ module CapistranoNinja
         end
       end
 
-      # from Capistrano::Logger
-      # IMPORTANT = 0
-      INFO      = 1
-      # DEBUG     = 2
-      # TRACE     = 3
+      LEVEL_NAMES = %w[IMPORTANT INFO DEBUG TRACE].each_with_object({}){|name, d|
+        d[ ::Capistrano::Logger.const_get(name) ] = name.downcase
+      }.freeze
+
 
       def logger
         CapistranoNinja.logger
@@ -33,7 +34,7 @@ module CapistranoNinja
         result = log_without_ninja(level, message, line_prefix, &block)
         begin
           local_msg = line_prefix ? "[#{line_prefix}] #{message}" : message
-          map = {"level" => level, "message" => local_msg}
+          map = {"level" => LEVEL_NAMES[level], "message" => local_msg}
           # map["line_prefix"] = line_prefix if line_prefix
           logger.post("#{tag_base}.local_logs", map)
 
@@ -47,24 +48,24 @@ module CapistranoNinja
             @uploaded_filepath = $1
           when "executing command" then
             if line_prefix && servers.include?(line_prefix)
-              logger.post("#{tag_base}.remote_logs", {"level" => level, "message" => @remote_command, "server" => line_prefix})
+              logger.post("#{tag_base}.remote_logs", {"level" => LEVEL_NAMES[level], "message" => @remote_command, "server" => line_prefix})
             end
           when /\A\[(.+)\]\s+(.+)\Z/ then
             server = $1
             body = $2.strip
             if @uploaded_filepath && body =~ /\A#{Regexp.escape(@uploaded_filepath)}\Z/
               logger.post("#{tag_base}.remote_logs",
-                          { "level" => level, "message" => @uploading_command,
+                          { "level" => LEVEL_NAMES[level], "message" => @uploading_command,
                             "server" => server, "from" => CapistranoNinja.config.local_hostname})
               @uploaded_filepath = nil
             else
               logger.post("#{tag_base}.remote_logs",
-                          { "level" => level, "message" => body,
+                          { "level" => LEVEL_NAMES[level], "message" => body,
                             "server" => server})
             end
           end
         rescue => e
-          log_without_ninja(INFO, "[#{e.class}] #{e.message}")
+          log_without_ninja(::Capistrano::Logger::INFO, "[#{e.class}] #{e.message}")
         end
         return result
       end
