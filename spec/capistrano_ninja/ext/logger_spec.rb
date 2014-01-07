@@ -49,7 +49,7 @@ describe CapistranoNinja::Ext::Logger do
       before{ cap_logger.log(trace, msg, nil) }
       it { expect(cap_logger.servers).to eq [server] }
       it { expect(cap_logger.logs).to eq [{level: trace, message: msg, line_prefix: nil}] }
-      it { expect(fld_logger.logs).to eq [["cap.log.local", {"level" => trace, "message" => msg}]] }
+      it { expect(fld_logger.logs).to eq [["cap.local_logs", {"level" => trace, "message" => msg}]] }
     end
   end
 
@@ -83,13 +83,13 @@ describe CapistranoNinja::Ext::Logger do
       it { expect(cap_logger.logs).to eq messages.map{|args| {level: args[0], message: args[1], line_prefix: args[2], } } }
       it do
         expected = [
-           ["cap.log.local" , {"level" => messages[0][0], "message" => messages[0][1]}],
-           ["cap.log.local" , {"level" => messages[1][0], "message" => messages[1][1]}],
-           ["cap.log.local" , {"level" => messages[2][0], "message" => messages[2][1]}],
-           ["cap.log.local" , {"level" => messages[3][0], "message" => "[#{server}] " + messages[3][1]}],
-           # insert cap.log.remote message which is replaced  "executing command" into actual command
-           ["cap.log.remote", {"level" => messages[3][0], "message" => messages[1][1], "server" => server}],
-           ["cap.log.local" , {"level" => messages[4][0], "message" => messages[4][1]}],
+           ["cap.local_logs" , {"level" => messages[0][0], "message" => messages[0][1]}],
+           ["cap.local_logs" , {"level" => messages[1][0], "message" => messages[1][1]}],
+           ["cap.local_logs" , {"level" => messages[2][0], "message" => messages[2][1]}],
+           ["cap.local_logs" , {"level" => messages[3][0], "message" => "[#{server}] " + messages[3][1]}],
+           # insert cap.remote_logs message which is replaced  "executing command" into actual command
+           ["cap.remote_logs", {"level" => messages[3][0], "message" => messages[1][1], "server" => server}],
+           ["cap.local_logs" , {"level" => messages[4][0], "message" => messages[4][1]}],
         ]
         expect(fld_logger.logs).to eq expected
       end
@@ -120,16 +120,16 @@ describe CapistranoNinja::Ext::Logger do
       it { expect(cap_logger.logs).to eq messages.map{|args| {level: args[0], message: args[1], line_prefix: args[2], } } }
       it do
         expected = [
-           ["cap.log.local" , {"level" => messages[0][0], "message" => messages[0][1]}],
-           ["cap.log.local" , {"level" => messages[1][0], "message" => messages[1][1]}],
-           ["cap.log.local" , {"level" => messages[2][0], "message" => messages[2][1]}],
-           ["cap.log.local" , {"level" => messages[3][0], "message" => "[#{server1}] " + messages[3][1]}],
-           ["cap.log.remote", {"level" => messages[3][0], "message" => messages[1][1], "server" => server1}],
-           ["cap.log.local" , {"level" => messages[4][0], "message" => "[#{server2}] " + messages[4][1]}],
-           ["cap.log.remote", {"level" => messages[4][0], "message" => messages[1][1], "server" => server2}],
-           ["cap.log.local" , {"level" => messages[5][0], "message" => "[#{server3}] " + messages[5][1]}],
-           ["cap.log.remote", {"level" => messages[5][0], "message" => messages[1][1], "server" => server3}],
-           ["cap.log.local" , {"level" => messages[6][0], "message" => messages[6][1]}],
+           ["cap.local_logs" , {"level" => messages[0][0], "message" => messages[0][1]}],
+           ["cap.local_logs" , {"level" => messages[1][0], "message" => messages[1][1]}],
+           ["cap.local_logs" , {"level" => messages[2][0], "message" => messages[2][1]}],
+           ["cap.local_logs" , {"level" => messages[3][0], "message" => "[#{server1}] " + messages[3][1]}],
+           ["cap.remote_logs", {"level" => messages[3][0], "message" => messages[1][1], "server" => server1}],
+           ["cap.local_logs" , {"level" => messages[4][0], "message" => "[#{server2}] " + messages[4][1]}],
+           ["cap.remote_logs", {"level" => messages[4][0], "message" => messages[1][1], "server" => server2}],
+           ["cap.local_logs" , {"level" => messages[5][0], "message" => "[#{server3}] " + messages[5][1]}],
+           ["cap.remote_logs", {"level" => messages[5][0], "message" => messages[1][1], "server" => server3}],
+           ["cap.local_logs" , {"level" => messages[6][0], "message" => messages[6][1]}],
         ]
         expect(fld_logger.logs).to eq expected
       end
@@ -160,13 +160,13 @@ describe CapistranoNinja::Ext::Logger do
       it { expect(cap_logger.logs).to eq messages.map{|args| {level: args[0], message: args[1], line_prefix: args[2], } } }
       it do
         expected = [
-           ["cap.log.local" , {"level" => messages[0][0], "message" => messages[0][1]}],
-           ["cap.log.local" , {"level" => messages[1][0], "message" => messages[1][1]}],
-           ["cap.log.local" , {"level" => messages[2][0], "message" => messages[2][1]}],
-           ["cap.log.remote", {"level" => messages[2][0], "message" => messages[1][1], "server" => server, "from" => local_hostname }],
-           ["cap.log.local" , {"level" => messages[3][0], "message" => messages[3][1]}],
-           ["cap.log.remote", {"level" => messages[3][0], "message" => "done", "server" => server}],
-           ["cap.log.local" , {"level" => messages[4][0], "message" => messages[4][1]}],
+           ["cap.local_logs" , {"level" => messages[0][0], "message" => messages[0][1]}],
+           ["cap.local_logs" , {"level" => messages[1][0], "message" => messages[1][1]}],
+           ["cap.local_logs" , {"level" => messages[2][0], "message" => messages[2][1]}],
+           ["cap.remote_logs", {"level" => messages[2][0], "message" => messages[1][1], "server" => server, "from" => local_hostname }],
+           ["cap.local_logs" , {"level" => messages[3][0], "message" => messages[3][1]}],
+           ["cap.remote_logs", {"level" => messages[3][0], "message" => "done", "server" => server}],
+           ["cap.local_logs" , {"level" => messages[4][0], "message" => messages[4][1]}],
         ]
         expect(fld_logger.logs).to eq expected
       end
@@ -198,9 +198,9 @@ describe CapistranoNinja::Ext::Logger do
       it { expect(cap_logger.logs).to eq messages.map{|args| {level: args[0], message: args[1], line_prefix: args[2], } } }
       it do
         expected = [
-           ["cap.log.local" , {"level" => messages[0][0], "message" => messages[0][1]}],
-           ["cap.log.local" , {"level" => messages[1][0], "message" => messages[1][1]}],
-           ["cap.log.local" , {"level" => messages[2][0], "message" => messages[2][1]}],
+           ["cap.local_logs" , {"level" => messages[0][0], "message" => messages[0][1]}],
+           ["cap.local_logs" , {"level" => messages[1][0], "message" => messages[1][1]}],
+           ["cap.local_logs" , {"level" => messages[2][0], "message" => messages[2][1]}],
         ]
         expect(fld_logger.logs).to eq expected
       end

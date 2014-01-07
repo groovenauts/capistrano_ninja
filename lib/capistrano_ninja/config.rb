@@ -9,7 +9,7 @@ module CapistranoNinja
     attr_writer :local_hostname
 
     def initialize
-      @tag_base = "cap"
+      @tag_base = "ninja"
       @fluent_logger_options = {
         host: "localhost",
         port: 24224,

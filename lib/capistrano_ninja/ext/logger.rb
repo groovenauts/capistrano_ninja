@@ -35,7 +35,7 @@ module CapistranoNinja
           local_msg = line_prefix ? "[#{line_prefix}] #{message}" : message
           map = {"level" => level, "message" => local_msg}
           # map["line_prefix"] = line_prefix if line_prefix
-          logger.post("#{tag_base}.log.local", map)
+          logger.post("#{tag_base}.local_logs", map)
 
           case message
           when /\Aservers: \[(.+)\]\Z/ then
@@ -47,18 +47,18 @@ module CapistranoNinja
             @uploaded_filepath = $1
           when "executing command" then
             if line_prefix && servers.include?(line_prefix)
-              logger.post("#{tag_base}.log.remote", {"level" => level, "message" => @remote_command, "server" => line_prefix})
+              logger.post("#{tag_base}.remote_logs", {"level" => level, "message" => @remote_command, "server" => line_prefix})
             end
           when /\A\[(.+)\]\s+(.+)\Z/ then
             server = $1
             body = $2
             if @uploaded_filepath && body =~ /\A#{Regexp.escape(@uploaded_filepath)}\Z/
-              logger.post("#{tag_base}.log.remote",
+              logger.post("#{tag_base}.remote_logs",
                           { "level" => level, "message" => @uploading_command,
                             "server" => server, "from" => CapistranoNinja.local_hostname})
               @uploaded_filepath = nil
             else
-              logger.post("#{tag_base}.log.remote",
+              logger.post("#{tag_base}.remote_logs",
                           { "level" => level, "message" => body,
                             "server" => server})
             end

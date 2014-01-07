@@ -5,12 +5,12 @@
 </source>
 
 # for debug
-<match cap.**>
+<match ninja.**>
   type stdout
 </match>
 
 # to store logs
-<match cap.log>
+<match ninja.*>
   # plugin type
   type mongo
 
@@ -19,48 +19,13 @@
   port 27017
 
   # mongodb db + collection
-  database capistrano_ninja
-  collection cap_ninja_logs
+  database ninja_logs
 
-  capped
-  capped_size 1024m
+  tag_mapped
+  remove_tag_prefix ninja.
 
-  # interval
-  flush_interval 10s
-</match>
-
-
-<match cap.log.local>
-  # plugin type
-  type mongo
-
-  # mongodb host + port
-  host localhost
-  port 27017
-
-  # mongodb db + collection
-  database capistrano_ninja
-  collection cap_ninja_log_locals
-
-  capped
-  capped_size 1024m
-
-  # interval
-  flush_interval 10s
-</match>
-
-
-<match cap.log.remote>
-  # plugin type
-  type mongo
-
-  # mongodb host + port
-  host localhost
-  port 27017
-
-  # mongodb db + collection
-  database capistrano_ninja
-  collection cap_ninja_log_remotes
+  # This configuration is used if tag not found. Default is 'untagged'.
+  collection misc
 
   capped
   capped_size 1024m

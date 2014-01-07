@@ -17,7 +17,7 @@ module CapistranoNinja
     def logger
       unless @logger
         @logger = FluentLogger.new(config.fluent_logger_options)
-        @logger.extra.update(:id => config.id_generator.call)
+        @logger.extra.update(:id => config.id_generator.call, :command => "capistrano")
       end
       @logger
     end
@@ -27,7 +27,7 @@ module CapistranoNinja
       Capistrano::Logger.module_eval do
         include CapistranoNinja::Ext::Logger
       end
-      logger.post("#{config.tag_base}.log", {program: "capistrano", command: "#{$PROGRAM_NAME} #{ARGV.join(' ')}", from: config.local_hostname})
+      logger.post("#{config.tag_base}.executions", {program: "capistrano", command: "#{$PROGRAM_NAME} #{ARGV.join(' ')}", from: config.local_hostname})
     end
 
   end
