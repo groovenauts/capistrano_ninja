@@ -5,9 +5,9 @@
 </source>
 
 # for debug
-# <match ninja.*>
-#   type stdout
-# </match>
+<match ninja.*>
+  type stdout
+</match>
 
 # to store logs
 <match ninja.*>

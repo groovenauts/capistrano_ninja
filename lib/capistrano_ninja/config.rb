@@ -4,11 +4,12 @@ require 'socket'
 
 module CapistranoNinja
   class Config
-    attr_accessor :tag_base, :id_generator
+    attr_accessor :tag_base, :exec_id_name, :id_generator
     attr_accessor :host, :port, :fluent_logger_options
     attr_writer :local_hostname
 
     def initialize
+      @exec_id_name = "exec_id"
       @tag_base = "ninja"
       @fluent_logger_options = {
         host: "localhost",

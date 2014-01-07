@@ -17,7 +17,7 @@ module CapistranoNinja
     def logger
       unless @logger
         @logger = FluentLogger.new(config.fluent_logger_options)
-        @logger.extra.update(:id => config.id_generator.call, :command => "capistrano")
+        @logger.extra.update(config.exec_id_name=> config.id_generator.call, :command => "capistrano")
       end
       @logger
     end
